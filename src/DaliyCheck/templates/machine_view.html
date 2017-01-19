@@ -1,0 +1,308 @@
+{% extends "daliycheck_base.html" %} {#继承指定应用模版#}
+{% block title %}主机管理{% endblock %}
+{% block exli %}
+	<li><a href="/daliycheck/spider_nbu">一体化备份存储</a></li>
+	<li><a href="/daliycheck/spider_ibm">数据库监控</a></li>
+	<li><a href="/daliycheck/spider_f5">负载均衡连接池</a></li>
+	<li><a href="/daliycheck/spider_ag">实时阻塞事件</a></li>
+	<li><a href="/daliycheck/report_view">生成巡检报告</a></li>
+  	<li class="active"><a href="/daliycheck/machine_view">主机管理</a></li>
+{% endblock %}
+{% block extracontent %}
+	<div class="container"> {#style="margin-top:55px;"使正文在顶处导航条下方 navbar-fixed-top#}
+		{% if errors %}
+  			<div class="alert alert-danger alert-dismissable"> {#操作结果提示框#}
+      			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> {#关闭警告框的叉子按钮#}
+      			{% for e in errors %}
+      				<strong>{{ e }}</strong></br> 
+      			{% endfor %}
+			</div>
+  		{% endif %}
+		{% if suces_fail == "add_suces" %}
+  			<div class="alert alert-success alert-dismissable"> {#操作结果提示框#}
+      			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> {#关闭警告框的叉子按钮#}
+      			<strong>添加成功</strong> 
+			</div>
+  		{% endif %}
+  		{% if suces_fail == "update_suces" %}
+  			<div class="alert alert-success  alert-dismissable"> {#操作结果提示框#}
+      			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> {#关闭警告框的叉子按钮#}
+      			<strong>修改成功</strong> 
+			</div>
+  		{% endif %}
+  		{% if suces_fail == "delete_suces" %}
+  			<div class="alert alert-success alert-dismissable"> {#操作结果提示框#}
+      			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> {#关闭警告框的叉子按钮#}
+      			<strong>删除成功</strong> 
+			</div>
+  		{% endif %}
+  		{% if suces_fail != "add_suces" and suces_fail != "update_suces" and suces_fail != "delete_suces" and not errors%}
+  			</br></br>
+  		{% endif %}
+		{% if suces_fail == "query_success" or suces_fail == "add_suces" or suces_fail == "update_suces" %}
+			<div class="panel panel-default"> {#面板框实例#}
+				{% if suces_fail == "query_success" %}
+					{% if stag == "ai" %}
+  						<div class="panel-heading">在时间点"{{ atime }}"添加的IP地址为"{{ ip }}"的查询结果:</div>
+  					{% elif atime or stag == "atime"%}
+  						<div class="panel-heading">在时间点"{{ atime }}"添加的主机:</div>
+  					{% else %}
+  						<div class="panel-heading">主机:"{{ ip }}"的查询结果为:</div>
+  					{% endif %}
+  				{% elif suces_fail == "update_suces" %}
+  					<div class="panel-heading">最近一次修改的主机</div>
+  				{% else %}
+  					<div class="panel-heading">最近一次添加的主机</div>
+  				{% endif %}
+  				{% if suces_fail == "query_success" and not query_report %}
+  					<div class="panel-body">
+                		<table class="table">  
+                    		<tbody>
+                            	<tr>  
+                                	<td>未查询到相关结果</td>  
+                            	</tr>
+                    		</tbody>  
+                		</table> 
+            		</div>
+    		</div>	
+  				{% else %}
+  					<div class="panel-body">
+    					<table class="table">  
+      						<thead>  
+        						<tr>  
+          							<th>IP地址</th>  
+          							<th>主机名</th>
+          							<th>操作系统类型</th>
+          							<th>添加时间</th>
+        						</tr>  
+      						</thead>  
+      						<tbody>
+      							{% if suces_fail == "add_suces" %}
+      								<tr>  
+          								<td>{{ query_report.ipaddress }}</td>
+          								{% if query_report.hostname == None %}  
+          									<td>未指定</td>
+          								{% else %}
+          									<td>{{ query_report.hostname }}</td>
+          								{% endif %}
+          								{% if query_report.hostname == None %}  
+          									<td>未指定</td>
+          								{% else %} 
+          									<td>{{ query_report.ostype }}</td>
+          								{% endif %}
+          								<td>{{ query_report.addtime }}</td>
+        							</tr>
+      							{% else %}
+      								{% for r in query_report %}  
+        								<tr>  
+          									<td>{{ r.ipaddress }}</td>  
+          									<td>{{ r.hostname }}</td> 
+          									<td>{{ r.ostype }}</td>
+          									<td>{{ r.addtime }}</td>
+        								</tr>
+        							{% endfor %}
+        						{% endif %}
+      						</tbody>  
+    					</table>
+  					</div>
+  			</div>
+  			{% if suces_fail == "query_success" %}
+  			<center>
+  				<ul class="pagination"> {#分页逻辑#}
+  					{% if query_report.has_previous %} {#前一页标签#}
+  						<li><a href="?page={{ query_report.previous_page_number }}">&laquo;</a></li>
+  					{% else %}
+      					<li class="disabled"><a href="">&laquo;</a></li>
+      				{% endif %}
+      				{% if query_report.paginator.num_pages <= 6 %} {#页数小于6页的显示方法#}
+      					{% for page in query_report.paginator.page_range %}
+      						{% if page == query_report.number %}
+      							<li class="active"><a href="?page={{ page }}">{{ page }}</a></li>
+      						{% else %}
+								<li><a href="?page={{ page }}">{{ page }}</a></li>
+							{% endif %}
+						{% endfor %}
+					{% else %} {#页数大于6页的显示方法#}
+      					{% if query_report.number < 4 %} {#前4页显示方式#}
+      						{% for page in query_report.paginator.page_range %}
+      							{% if page < 5 %}
+      								{% if page == query_report.number %}
+      									<li class="active"><a href="?page={{ page }}">{{ page }}</a></li>
+      								{% else %}
+      									<li><a href="?page={{ page }}">{{ page }}</a></li>
+      								{% endif %}
+      							{% endif %}
+								{% if page == query_report.paginator.num_pages %}
+									<li><a href="">.....</a></li>
+									<li><a href="?page={{ page }}">{{ page }}</a></li>
+								{% endif %}
+							{% endfor %}
+						{% elif query_report.number == query_report.paginator.num_pages %} {#最后一页显示方法#}
+							{% for page in query_report.paginator.page_range %}
+      							{% if page == 1 %}
+      								<li><a href="?page={{ page }}">{{ page }}</a></li>
+      								<li><a href="">.....</a></li>
+      							{% endif %}
+								{% if page == query_report.paginator.num_pages %}
+									<li><a href="?page={{ query_report.previous_page_number }}">{{ query_report.previous_page_number }}</a></li>
+									<li class="active"><a href="?page={{ page }}">{{ page }}</a></li>
+								{% endif %}
+							{% endfor %}
+						{% else %} {#中间页显示方法#}
+      						<li><a href="?page=1">1</a></li>
+      						{% if query_report.previous_page_number != 1 %}
+      							<li><a href="">.....</a></li>
+      							<li><a href="?page={{ query_report.previous_page_number }}">{{ query_report.previous_page_number }}</a></li>
+      						{% endif %}
+							<li class="active"><a href="?page={{ query_report.number }}">{{ query_report.number }}</a></li>
+							{% if query_report.next_page_number != query_report.paginator.num_pages %}
+								<li><a href="?page={{ query_report.next_page_number }}">{{ query_report.next_page_number }}</a></li>
+								<li><a href="">.....</a></li>
+							{% endif %}
+							<li><a href="?page={{ query_report.paginator.num_pages }}">{{ query_report.paginator.num_pages }}</a></li>
+						{% endif %}
+					{% endif %}
+      				{% if query_report.has_next %} {#后一页标签#}
+  						<li><a href="?page={{ query_report.next_page_number }}">&raquo;</a></li>
+  					{% else %}
+      					<li class="disabled"><a href="">&raquo;</a></li>
+      				{% endif %}
+    			</ul>
+    		</center> 
+    		{% endif %}
+        		{% endif %}
+  		{% endif %}
+  		<div class="row">
+  			<div class="col-md-6">
+				<div class="panel panel-primary"> {#折叠栏实例#}
+					<div class="panel-heading">
+						<h4 class="panel-title">
+                			<a data-toggle="collapse" href="#m_query">查询主机</a>
+            			</h4>
+					</div>
+					<div id="m_query" class="panel-collapse collapse in"> {#collapse in表示折叠栏默认展开#}
+            			<div class="panel-body">
+            				</br>
+							<form action="/daliycheck/machine_view" method="post" class="form-horizontal" role="form">{% csrf_token %} {#继承指定应用模版#}
+  								<div class="form-group">
+  									<label for="ipa" class="col-md-2 control-laber">IP地址</label>
+  									<div class="col-md-8">
+  										<input type="text" name="ip" class="form-control" id="ipa" placeholder="请输入IP地址">
+  									</div>
+  								</div>
+  								</br>
+  								<div class="form-group">
+  									<label for="da" class="col-md-2 control-laber">日期</label>
+  									<div class="col-md-8">
+  										<input type="text" name="atime" class="form-control" id="da" placeholder="请输入日期">
+  									</div>
+  								</div>
+  								</br>
+  								<input type="submit" value="查询" class="btn btn-primary btn-lg btn-block">
+  							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="panel panel-success"> {#折叠栏实例#}
+					<div class="panel-heading">
+						<h4 class="panel-title">
+							<a data-toggle="collapse" href="#m_add">添加主机</a>
+            			</h4>
+					</div>
+					<div id="m_add" class="panel-collapse collapse in">
+            			<div class="panel-body">
+							<form action="/daliycheck/machine_view/add" method="post" class="form-horizontal" role="form">{% csrf_token %} {#继承指定应用模版#}
+  								<div class="form-group">
+  									<label for="ipa" class="col-md-2 control-laber">新IP地址</label>
+  									<div class="col-md-8">
+  										<input type="text" name="q_ip" class="form-control" id="iqa" placeholder="请输入IP地址">
+  									</div>
+  								</div>
+  								<div class="form-group">
+  									<label for="hn" class="col-md-2 control-laber">新主机名</label>
+  									<div class="col-md-8">
+  										<input type="text" name="new_hostname" class="form-control" id="hn" placeholder="请输入主机名">
+  									</div>
+  								</div>
+  								<div class="form-group">
+  									<label for="oty" class="col-md-2 control-laber">操作系统类型</label>
+  									<div class="col-md-8">
+  										<input type="text" name="new_ostype" class="form-control" id="oty" placeholder="请输入操作系统类型">
+  									</div>
+  								</div>
+  								<input type="submit" value="添加" class="btn btn-success btn-lg btn-block">
+  							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-6">
+				<div class="panel panel-warning"> {#折叠栏实例#}
+					<div class="panel-heading">
+						<h4 class="panel-title">
+							<a data-toggle="collapse" href="#m_update">修改主机</a>
+            			</h4>
+					</div>
+					<div id="m_update" class="panel-collapse collapse">
+            			<div class="panel-body">
+							<form action="/daliycheck/machine_view/update" method="post" class="form-horizontal" role="form">{% csrf_token %} {#继承指定应用模版#}
+								<div class="form-group">
+  									<label for="oip" class="col-md-2 control-laber">需修改主机IP地址</label>
+  									<div class="col-md-8">
+  										<input type="text" name="q_ip" class="form-control" id="oiq" placeholder="请输入IP地址">
+  									</div>
+  								</div>
+  								<div class="form-group">
+  									<label for="nip" class="col-md-2 control-laber">修改后主机IP地址</label>
+  									<div class="col-md-8">
+  										<input type="text" name="update_ip" class="form-control" id="niq" placeholder="请输入IP地址">
+  									</div>
+  								</div>
+  								<div class="form-group">
+  									<label for="nhn" class="col-md-2 control-laber">修改后主机名</label>
+  									<div class="col-md-8">
+  										<input type="text" name="update_hostname" class="form-control" id="nhn" placeholder="请输入主机名">
+  									</div>
+  								</div>
+  								<div class="form-group">
+  									<label for="noty" class="col-md-2 control-laber">修改后操作系统类型</label>
+  									<div class="col-md-8">
+  										<input type="text" name="update_ostype" class="form-control" id="noty" placeholder="请输入操作系统类型">
+  									</div>
+  								</div>
+  								<input type="submit" value="修改" class="btn btn-warning btn-lg btn-block">
+  							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="panel panel-danger"> {#折叠栏实例#}
+					<div class="panel-heading">
+						<h4 class="panel-title">
+							<a data-toggle="collapse" href="#m_delete">删除主机</a>
+            			</h4>
+					</div>
+					<div id="m_delete" class="panel-collapse collapse">
+            			<div class="panel-body">
+							<form action="/daliycheck/machine_view/delete" method="post" class="form-horizontal" role="form">{% csrf_token %} {#继承指定应用模版#}
+								<div class="form-group">
+  									<label for="dip" class="col-md-2 control-laber">需删除主机IP地址</label>
+  									<div class="col-md-8">
+  										<input type="text" name="q_ip" class="form-control" id="diq" placeholder="请输入IP地址">
+  									</div>
+  								</div>
+  								<input type="submit" value="删除" class="btn btn-danger btn-lg btn-block">
+  							</form>
+						</div>
+					</div>
+				</div>	
+			</div>
+		</div>
+	</div>
+{% endblock %}
+

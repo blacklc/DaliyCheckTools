@@ -1,0 +1,156 @@
+{% extends "daliycheck_base.html" %} {#继承指定应用模版#}
+{% block title %}首页{% endblock %}
+{% block exli %}
+	<li><a href="/daliycheck/spider_nbu">一体化备份存储</a></li>
+	<li><a href="/daliycheck/spider_ibm">数据库监控</a></li>
+	<li><a href="/daliycheck/spider_f5">负载均衡连接池</a></li>
+	<li><a href="/daliycheck/spider_ag">实时阻塞事件</a></li>
+	<li><a href="/daliycheck/report_view">生成巡检报告</a></li>
+  	<li><a href="/daliycheck/machine_view">主机管理</a></li>
+{% endblock %}
+{% block extracontent %}
+	<div class="container"> {#style="margin-top:55px;"使正文在顶处导航条下方 navbar-fixed-top#}
+  		{%if errors%}
+			<div class="alert alert-danger alert-dismissable"> {#操作结果提示框#}
+      			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> {#关闭警告框的叉子按钮#}
+      			{% for e in errors %}
+      				<strong>{{ e }}</strong></br> 
+      			{% endfor %}
+			</div>
+			</br>
+		{% else %}
+			</br>
+		{%endif%}
+		<div style="display:flex;margin-bottom:10px">
+			<li class="active"><a href="/daliycheck/start_query" class="btn btn-success" role="button" style="width:120px;height:35px;">开始巡检</a></li>
+		<form action="/daliycheck/"  method="post">{% csrf_token %} {#继承指定应用模版#}
+			<div style="display:flex;margin-left:620px;">
+				<div style="margin-top:4px;">
+					<input type="text" name="ip" placeholder="IP地址">
+				</div>
+				<div style="margin-left:3px;margin-top:4px;">
+					<input type="text" name="date" placeholder="巡检日期">
+				</div>
+				<div style="margin-left:5px;">
+  					<input type="submit" value="查询" class="btn btn-primary btn-sm" style="width:70px;height:35px;">
+  				</div>
+  			</div>
+  		</form>
+  		</div>
+		<div class="panel panel-default"> {#面板框实例#}
+			{% if date or ip or stag %}
+  				{% if stag == "di" %}
+  					<div class="panel-heading">在时间点"{{ date }}",主机:"{{ ip }}"的查询结果:</div>
+  				{% else %}
+  					{% if ip or stag == "ip" %}
+  						<div class="panel-heading">IP地址"{{ ip }}"的查询结果:</div>
+  					{% else %}
+  						<div class="panel-heading">在时间点"{{ date }}"的查询结果:</div>
+  					{% endif %}
+  				{% endif %}
+  			{% else %}
+  				<div class="panel-heading">最近一次的巡检结果</div>
+  			{% endif %}
+  			{% if query_report %}
+  				<div class="panel-body">
+    				<table class="table">  
+      					<thead>  
+        					<tr>  
+          						<th>巡检时间</th>  
+          						<th>主机名</th>
+          						<th>IP地址</th>
+          						<th>存储空间使用率</th>
+          						<th>存储剩余空间(G)</th>  
+        					</tr>  
+      					</thead>  
+      					<tbody>
+      						{% for r in query_report %}  
+        						<tr>  
+          							<td>{{ r.timestamp.date }}</td>  
+          							<td>{{ r.hostname }}</td> 
+          							<td>{{ r.ip }}</td>
+          							<td>{{ r.strogeused }}%</td>
+          							<td>{{ r.avalaiblespace }}</td>  
+        						</tr>
+        					{% endfor %}
+      					</tbody>  
+    				</table> 
+  				</div>
+  		</div>
+  			<center>
+  				<ul class="pagination"> {#分页逻辑#}
+  					{% if query_report.has_previous %} {#前一页标签#}
+  						<li><a href="?page={{ query_report.previous_page_number }}">&laquo;</a></li>
+  					{% else %}
+      					<li class="disabled"><a href="">&laquo;</a></li>
+      				{% endif %}
+      				{% if query_report.paginator.num_pages <= 6 %} {#页数小于6页的显示方法#}
+      					{% for page in query_report.paginator.page_range %}
+      						{% if page == query_report.number %}
+      							<li class="active"><a href="?page={{ page }}">{{ page }}</a></li>
+      						{% else %}
+								<li><a href="?page={{ page }}">{{ page }}</a></li>
+							{% endif %}
+						{% endfor %}
+					{% else %} {#页数大于6页的显示方法#}
+      					{% if query_report.number < 4 %} {#前4页显示方式#}
+      						{% for page in query_report.paginator.page_range %}
+      							{% if page < 5 %}
+      								{% if page == query_report.number %}
+      									<li class="active"><a href="?page={{ page }}">{{ page }}</a></li>
+      								{% else %}
+      									<li><a href="?page={{ page }}">{{ page }}</a></li>
+      								{% endif %}
+      							{% endif %}
+								{% if page == query_report.paginator.num_pages %}
+									<li><a href="">.....</a></li>
+									<li><a href="?page={{ page }}">{{ page }}</a></li>
+								{% endif %}
+							{% endfor %}
+						{% elif query_report.number == query_report.paginator.num_pages %} {#最后一页显示方法#}
+							{% for page in query_report.paginator.page_range %}
+      							{% if page == 1 %}
+      								<li><a href="?page={{ page }}">{{ page }}</a></li>
+      								<li><a href="">.....</a></li>
+      							{% endif %}
+								{% if page == query_report.paginator.num_pages %}
+									<li><a href="?page={{ query_report.previous_page_number }}">{{ query_report.previous_page_number }}</a></li>
+									<li class="active"><a href="?page={{ page }}">{{ page }}</a></li>
+								{% endif %}
+							{% endfor %}
+						{% else %} {#中间页显示方法#}
+      						<li><a href="?page=1">1</a></li>
+      						{% if query_report.previous_page_number != 1 %}
+      							<li><a href="">.....</a></li>
+      							<li><a href="?page={{ query_report.previous_page_number }}">{{ query_report.previous_page_number }}</a></li>
+      						{% endif %}
+							<li class="active"><a href="?page={{ query_report.number }}">{{ query_report.number }}</a></li>
+							{% if query_report.next_page_number != query_report.paginator.num_pages %}
+								<li><a href="?page={{ query_report.next_page_number }}">{{ query_report.next_page_number }}</a></li>
+								<li><a href="">.....</a></li>
+							{% endif %}
+							<li><a href="?page={{ query_report.paginator.num_pages }}">{{ query_report.paginator.num_pages }}</a></li>
+						{% endif %}
+					{% endif %}
+      				{% if query_report.has_next %} {#后一页标签#}
+  						<li><a href="?page={{ query_report.next_page_number }}">&raquo;</a></li>
+  					{% else %}
+      					<li class="disabled"><a href="">&raquo;</a></li>
+      				{% endif %}
+    			</ul>
+    		</center> 
+    	{% else %}
+    		<div class="panel-body">
+    			<table class="table">  
+      				<tbody>
+        					<tr>  
+          						<td>未查询到相关结果</td>  
+        					</tr>
+      				</tbody>  
+    			</table> 
+  			</div>
+    </div>
+    	{% endif %}
+	</div>
+{% endblock %}
+

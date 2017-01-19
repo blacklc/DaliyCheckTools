@@ -1,0 +1,67 @@
+{% extends "daliycheck_base.html" %} {#继承指定应用模版#}
+{% block title %}生成巡检报告{% endblock %}
+{% block exli %}
+	<li><a href="/daliycheck/spider_nbu">一体化备份存储</a></li>
+	<li><a href="/daliycheck/spider_ibm">数据库监控</a></li>
+	<li><a href="/daliycheck/spider_f5">负载均衡连接池</a></li>
+	<li><a href="/daliycheck/spider_ag">实时阻塞事件</a></li>
+	<li class="active"><a href="/daliycheck/report_view">生成巡检报告</a></li>
+  	<li><a href="/daliycheck/machine_view">主机管理</a></li>
+{% endblock %}
+{% block extracontent %}
+    <style>
+    	h4.panel-title {color:#FFFFFF;}
+    	div.panel {background-color:#333333;}
+  		div.panel-heading {background-color:#99CC99;}
+  		div.panel-body {background-color:#FFFFFF;}
+  	</style> 
+	<div class="container"> {#style="margin-top:55px;"使正文在顶处导航条下方 navbar-fixed-top#}
+		{% if suces_fail == "create_suces" %}
+  			<div class="alert alert-success alert-dismissable"> {#操作结果提示框#}
+      			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> {#关闭警告框的叉子按钮#}
+      			<strong>巡检报告生成成功</strong> 
+			</div>
+  		{% endif %}
+		{% if errors %}
+  			<div class="alert alert-danger alert-dismissable"> {#操作结果提示框#}
+      			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> {#关闭警告框的叉子按钮#}
+      			{% for e in errors %}
+      				<strong>{{ e }}</strong></br> 
+      			{% endfor %}
+			</div>
+  		{% endif %}
+  		{% if suces_fail != "create_suces" and not errors %}
+  			</br></br></br></br></br></br>
+  		{% endif %}
+  		<div class="row">
+			<div class="col-md-6 col-md-offset-3">				
+  				<div class="panel">
+  					<div class="panel-heading">
+						<h4 class="panel-title">创建巡检报告</h4>
+					</div>
+					<div class="panel-body">
+						</br>
+						<form action="/daliycheck/create_report" method="post" class="form-horizontal" role="form">{% csrf_token %} {#继承指定应用模版#}
+  							<div class="form-group">
+  								<label for="q_date" class="col-md-2 control-laber">巡检日期</label>
+  								<div class="col-md-10">
+  									<input type="text" name="date" class="form-control" id=""q_date" placeholder="请输入巡检日期">
+  								</div>
+  							</div>
+  							</br>
+  							<div class="form-group">
+  								<label for="app" class="col-md-2 control-laber">业务系统名(可选)</label>
+  								<div class="col-md-10">
+  									<input type="text" name="appname" class="form-control" id="app" placeholder="请输入业务系统名">
+  								</div>
+  							</div>
+  							</br>
+  							<input type="submit" value="生成报告" class="btn btn-success btn-lg btn-block">
+  						</form>
+  					</div>
+  				</div>
+  			</div>
+  		</div>
+	</div>
+{% endblock %}
+

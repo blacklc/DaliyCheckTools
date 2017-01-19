@@ -1,0 +1,26 @@
+{#基础模版#}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  {% load static %}
+  <head>
+  	<!-- 引入 Jquery -->
+    <script src="{% static "js/jquery-3.1.1.js" %}"></script>
+  	<!-- 引入 Bootstrap -->
+	<link href="{% static 'css/bootstrap.css' %}" rel="stylesheet" type="text/css">
+	<script src="{% static 'js/bootstrap.js' %}"></script>
+	<title>{% block title %}Index{% endblock %}</title> {#定义标题模版:block title#}
+	<meta name="viewport" content="width=device-width, initial-scale=1"> {#兼容移动设备屏幕#}
+    <style>
+  		body {background-color:#333333;}
+  		h1 {color:#FFFFFF;}
+  		h4 {color:#FFFFFF;}
+		p {color:#FFFFFF;}
+  	</style> 
+  	{#定义head模版:block extrahead#}
+    {% block extrahead %}{% endblock %}
+  </head>
+  <body>
+    {% block content %} {#定义内容模版:block content#}
+    {% endblock %}
+  </body>
+</html>

@@ -1,0 +1,161 @@
+{% extends "daliycheck_base.html" %} {#继承指定应用模版#}
+{% block title %}NBU{% endblock %}
+{% block exli %}
+	<li class="active"><a href="/daliycheck/spider_nbu">一体化备份存储</a></li>
+	<li><a href="/daliycheck/spider_ibm">数据库监控</a></li>
+	<li><a href="/daliycheck/spider_f5">负载均衡连接池</a></li>
+	<li><a href="/daliycheck/spider_ag">实时阻塞事件</a></li>
+  	<li><a href="/daliycheck/report_view">生成巡检报告</a></li>
+  	<li><a href="/daliycheck/machine_view">主机管理</a></li>
+{% endblock %}
+{% load tools %}
+{% block extracontent %}
+    <style>
+    	p {color:#FFFFFF;}
+  	</style> 
+	<div class="container"> {#style="margin-top:55px;"使正文在顶处导航条下方 navbar-fixed-top#}
+		{% if notification == "True" %}
+  			<div class="alert alert-success alert-dismissable"> {#操作结果提示框#}
+      			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> {#关闭警告框的叉子按钮#}
+      			<strong>URL已成功加入爬取队列，请稍后访问该页面查看结果.</strong> 
+			</div>
+  		{% endif %}		
+		<form action="/daliycheck/spider_nbu" method="post" class="form-horizontal" role="form">{% csrf_token %} {#继承指定应用模版#}
+			<div style="display:flex;margin-top:20px;">
+				<div>
+					<div style="display:flex;">
+						<div style="margin-left:180px;margin-right:10px;margin-top:6px">
+							<p>一体化备份WEB服务首页URL:</p>
+						</div>
+						<div style="width:410px;">
+							<input type="text" style="width:100%;" name="nbu_url" class="form-control" id="nbuurl" placeholder={{ url }}>
+						</div>
+					</div>
+					<div style="display:flex;">
+						<div style="margin-left:295px;margin-right:10px;margin-top:6px">
+							<p>登陆用户名:</p>
+						</div>
+						<div style="width:410px;">
+							<input type="text" style="width:100%;" name="nbu_username" class="form-control" id="nbuurl" placeholder={{ username }}>
+						</div>
+					</div>
+					<div style="display:flex;">
+						<div style="margin-left:309px;margin-right:10px;margin-top:6px">
+							<p>登陆密码:</p>
+						</div>
+						<div style="width:410px;">
+							<input type="text" style="width:100%;" name="nbu_password" class="form-control" id="nbuurl" placeholder="************">
+						</div>
+					</div>
+				</div>
+				<div style="margin-left:40px;margin-top:20px;">	
+					<input type="submit" value="获取实时备份信息" class="btn btn-warning btn-md btn-block" style="width:140px;height:60px;word-wrap:break-word;" >
+				</div>
+			</div>
+		</form>
+		<p style="margin-left:250px;margin-bottom:30px;">(工具会将本次输入的所有内容作为新的默认值.即再次获取同服务信息可直接点击按钮发布获取任务.)</p>
+		<div class="panel panel-default"> {#面板框实例#}
+  			<div class="panel-heading">历史备份信息</div>
+  			{% if query_report %}
+  				<div class="panel-body">
+    				<table class="table">  
+      					<thead>  
+        					<tr>  
+          						<th>获取时间</th>  
+          						<th>已使用空间(G)</th>
+          						<th>已使用空间百分比</th>
+          						<th>可用空间(G)</th>
+          						<th>可用空间百分比</th>  
+        					</tr>  
+      					</thead>  
+      					<tbody>
+      						{% for r in query_report %}  
+        						<tr>  
+          							<td>{{ r.timestamp|format_timestamp }}</td>  
+          							<td>{{ r.usedStorageSpace }}</td> 
+          							<td>{{ r.usedStorageSpaceInPercent|clear_symbol:"("|clear_symbol:")" }}</td>
+          							<td>{{ r.availStorageSpace }}</td>
+          							<td>{{ r.availStorageSpaceInPercent|clear_symbol:"("|clear_symbol:")" }}</td>  
+        						</tr>
+        					{% endfor %}
+      					</tbody>  
+    				</table> 
+  				</div>
+  		</div>
+  			<center>
+  				<ul class="pagination"> {#分页逻辑#}
+  					{% if query_report.has_previous %} {#前一页标签#}
+  						<li><a href="?page={{ query_report.previous_page_number }}">&laquo;</a></li>
+  					{% else %}
+      					<li class="disabled"><a href="">&laquo;</a></li>
+      				{% endif %}
+      				{% if query_report.paginator.num_pages <= 6 %} {#页数小于6页的显示方法#}
+      					{% for page in query_report.paginator.page_range %}
+      						{% if page == query_report.number %}
+      							<li class="active"><a href="?page={{ page }}">{{ page }}</a></li>
+      						{% else %}
+								<li><a href="?page={{ page }}">{{ page }}</a></li>
+							{% endif %}
+						{% endfor %}
+					{% else %} {#页数大于6页的显示方法#}
+      					{% if query_report.number < 4 %} {#前4页显示方式#}
+      						{% for page in query_report.paginator.page_range %}
+      							{% if page < 5 %}
+      								{% if page == query_report.number %}
+      									<li class="active"><a href="?page={{ page }}">{{ page }}</a></li>
+      								{% else %}
+      									<li><a href="?page={{ page }}">{{ page }}</a></li>
+      								{% endif %}
+      							{% endif %}
+								{% if page == query_report.paginator.num_pages %}
+									<li><a href="">.....</a></li>
+									<li><a href="?page={{ page }}">{{ page }}</a></li>
+								{% endif %}
+							{% endfor %}
+						{% elif query_report.number == query_report.paginator.num_pages %} {#最后一页显示方法#}
+							{% for page in query_report.paginator.page_range %}
+      							{% if page == 1 %}
+      								<li><a href="?page={{ page }}">{{ page }}</a></li>
+      								<li><a href="">.....</a></li>
+      							{% endif %}
+								{% if page == query_report.paginator.num_pages %}
+									<li><a href="?page={{ query_report.previous_page_number }}">{{ query_report.previous_page_number }}</a></li>
+									<li class="active"><a href="?page={{ page }}">{{ page }}</a></li>
+								{% endif %}
+							{% endfor %}
+						{% else %} {#中间页显示方法#}
+      						<li><a href="?page=1">1</a></li>
+      						{% if query_report.previous_page_number != 1 %}
+      							<li><a href="">.....</a></li>
+      							<li><a href="?page={{ query_report.previous_page_number }}">{{ query_report.previous_page_number }}</a></li>
+      						{% endif %}
+							<li class="active"><a href="?page={{ query_report.number }}">{{ query_report.number }}</a></li>
+							{% if query_report.next_page_number != query_report.paginator.num_pages %}
+								<li><a href="?page={{ query_report.next_page_number }}">{{ query_report.next_page_number }}</a></li>
+								<li><a href="">.....</a></li>
+							{% endif %}
+							<li><a href="?page={{ query_report.paginator.num_pages }}">{{ query_report.paginator.num_pages }}</a></li>
+						{% endif %}
+					{% endif %}
+      				{% if query_report.has_next %} {#后一页标签#}
+  						<li><a href="?page={{ query_report.next_page_number }}">&raquo;</a></li>
+  					{% else %}
+      					<li class="disabled"><a href="">&raquo;</a></li>
+      				{% endif %}
+    			</ul>
+    		</center> 
+    	{% else %}
+    		<div class="panel-body">
+    			<table class="table">  
+      				<tbody>
+        					<tr>  
+          						<td>未查询到相关历史信息</td>  
+        					</tr>
+      				</tbody>  
+    			</table> 
+  			</div>
+    </div>
+    	{% endif %}
+	</div>
+{% endblock %}
+

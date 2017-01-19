@@ -1,0 +1,54 @@
+{% extends "daliycheck_base.html" %} {#继承指定应用模版#}
+{% block title %}巡检错误结果报告{% endblock %}
+{% block exli %}
+	<li><a href="/daliycheck/spider_nbu">一体化备份存储</a></li>
+	<li><a href="/daliycheck/spider_ibm">数据库监控</a></li>
+	<li><a href="/daliycheck/spider_f5">负载均衡连接池</a></li>
+	<li><a href="/daliycheck/spider_ag">实时阻塞事件</a></li>
+	<li><a href="/daliycheck/report_view">生成巡检报告</a></li>
+  	<li><a href="/daliycheck/machine_view">主机管理</a></li>
+{% endblock %}
+{% block extracontent %}
+	<div class="container"> {#style="margin-top:55px;"使正文在顶处导航条下方 navbar-fixed-top#}
+		<div class="panel panel-danger"> {#面板框实例#}
+  			<div class="panel-heading"> 本次任务中链接失败的主机:</div>
+  			<div class="panel-body">
+    			<table class="table">  
+      				<thead>  
+        				<tr>   
+          					<th>IP地址</th>
+        				</tr>  
+      				</thead>  
+      				<tbody>
+      					{% for i in d_ip %}  
+        					<tr>  
+          						<td>{{ i }}</td>  
+        					</tr>
+        				{% endfor %}
+      				</tbody>  
+    			</table>  
+  			</div>
+  		</div>
+  		<div class="panel panel-danger"> {#面板框实例#}
+  			<div class="panel-heading"> 本次任务中巡检失败的主机:</div>
+  			<div class="panel-body">
+    			<table class="table">  
+      				<thead>  
+        				<tr>   
+          					<th>IP地址</th>
+        				</tr>  
+      				</thead>  
+      				<tbody>
+      					{% for i in e_ip %}  
+        					<tr>  
+          						<td>{{ i }}</td>  
+        					</tr>
+        				{% endfor %}
+      				</tbody>  
+    			</table>  
+  			</div>
+  		</div>
+		<center><a href="/daliycheck" class="btn btn-primary btn-lg">返回首页</a></center>
+	</div>
+{% endblock %}
+

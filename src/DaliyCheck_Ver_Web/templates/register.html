@@ -1,0 +1,31 @@
+{% extends "base.html" %} {#继承指定应用模版#}
+{% block title %}注册用户{% endblock %}
+{% block content %}#009999
+	<div class="container center-block">
+		</br></br></br></br></br></br></br>
+		<div class="row">
+			<div class="col-md-6 col-md-offset-3">
+				<div class="panel">
+				{#注意form的拼写#}
+				<form action="" method="post" role="form">{% csrf_token %}{#自定义应用使用action传url参数时，需注意在url路径最前边加上当前应用路径的前缀;action为空表示表单将提交给与当前页面相同的URL#}
+					<div class="form-group">
+						<table class="table table-bordered table-hover"> {#class依次含义为:使表格显示斑马条纹,显示边框，鼠标悬停行中有特效，使表格随窗口动态变换大小(响应式表格)#}
+							{{form.as_table}}
+						</table>
+					</div>
+					<div class="form-group">
+						<input type="submit" value="注册" class="btn btn-success btn-block btn-lg">
+						<a href="/" class="btn btn-primary btn-block btn-lg">返回首页</a>
+					</div>
+				</form>
+				</div>
+			</div>
+			{% if form.errors %}
+				<div class="alert alert-success alert-dismissable"> {#操作结果提示框#}
+					<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> {#关闭警告框的叉子按钮#}
+					请解决如下问题:{{form.errors|pluralize}}
+				</div>
+			{%endif%}
+		</div>
+	</div>
+{% endblock %}

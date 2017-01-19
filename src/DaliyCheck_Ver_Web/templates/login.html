@@ -1,0 +1,77 @@
+{% extends "base.html" %} {#继承指定应用模版#}
+{% block title %}用户登陆{% endblock %}
+{% block content %}
+    <style>
+		div.panel {background-color:#333333;}
+  	</style> 
+<div class="container center-block">
+	<div class="row">
+		<div class="col-md-7"> 
+			</br></br></br><center><h1>自动化巡检工具</h1></br></center>
+			<p>本工具可对指定集群中的目标主机进行巡检操作，从而简化了繁杂的人为巡检操作。自动化巡检可为您在日常巡检工作节省出大量时间。同时，系统可根据用户提供的指标自动生成巡检报告，以便用户能够快捷、清晰的查看巡检结果。</p></br>
+			<div class="col-md-12">
+				<div id="myCarousel" class="carousel slide" data-ride="carousel"> {#轮播实例；data-ride="carousel"表示页面加载时就开始轮播#}
+    				<!-- 轮播（Carousel）指标 -->
+    				<ol class="carousel-indicators">
+        				<li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+        				<li data-target="#myCarousel" data-slide-to="1"></li>
+        				<li data-target="#myCarousel" data-slide-to="2"></li>
+    				</ol>   
+    				<!-- 轮播（Carousel）项目 -->
+    				<div class="carousel-inner">
+        				<div class="item active">
+            				<img src="/static/picture/Yosemite.jpg" alt="First slide">
+        				</div>
+        				<div class="item">
+            				<img src="/static/picture/Yosemite 2.jpg" alt="Second slide">
+        				</div>
+        				<div class="item">
+            				<img src="/static/picture/Yosemite 5.jpg" alt="Third slide">
+        				</div>
+    				</div>
+    				<!-- 轮播（Carousel）导航 -->
+    				<a class="carousel-control left" href="#myCarousel" data-slide="prev">
+    					&lsaquo;
+    				</a>
+    				<a class="carousel-control right" href="#myCarousel" data-slide="next">
+    					&rsaquo;
+    				</a>
+				</div>
+			</div> 
+		</div>
+		<div class="col-md-5">
+			</br></br></br></br></br></br></br></br></br></br></br></br>
+			<div class="panel">
+				{#注意form的拼写#}
+				<form action="/" method="post" role="form">{% csrf_token %} {#继承指定应用模版#}
+					<div class="form-group">
+						<input type="text" name="username" class="form-control input-lg" placeholder="用户名">
+					</div>
+					<div class="form-group">
+						<input type="password" name="password" class="form-control input-lg" placeholder="密码"></br>
+					</div>
+					<div class="form-group">
+  						<input type="submit" value="登陆" class="btn btn-primary btn-block btn-lg">
+  						<a href="/register/" class="btn btn-success btn-block btn-lg">注册新用户</a></br>
+  					</div>
+  				</form>
+  			</div>
+			{% if register_info %}
+				<div class="alert alert-success alert-dismissable"> {#操作结果提示框#}
+      				<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> {#关闭警告框的叉子按钮#}
+      				注册新用户成功
+				</div>
+			{% endif %}
+			{% if errors %}
+ 				<div class="alert alert-danger alert-dismissable"> {#操作结果提示框#}
+      				<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> {#关闭警告框的叉子按钮#}
+      				{% for e in errors %}
+      					<strong>{{ e }}</strong></br> 
+      				{% endfor %}
+				</div>
+  			{% endif %}
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
