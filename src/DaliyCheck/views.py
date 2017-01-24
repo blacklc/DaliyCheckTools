@@ -361,7 +361,7 @@ def get_data_by_spider(request,model,template_name,system_name,default_url,defau
             "username":last_username,
         }
         template=template_name
-        del redis_client
+        del redis_client #关闭redis连接
         return render(request,template,context)
 
 def get_lockevent(request):
